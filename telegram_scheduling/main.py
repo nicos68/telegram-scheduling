@@ -12,8 +12,7 @@ timezone = 'Europe/Paris'
 
 
 def daily(context):
-    job_context = context.job.context
-    chat_id = job_context.chat_id
+    chat_id = context.job.context
     context.bot.send_message(
         chat_id=chat_id,
         text="It works !")
@@ -27,13 +26,14 @@ def schedule(update, context):
                               second=0)
     utc_datetime = target_datetime.to('utc')
     time = utc_datetime.time()
-    context.job_queue.run_daily(daily, time)
+    context.job_queue.run_daily(daily, time, context=update.message.chat_id)
 
 
 def main():
     logger.info("Starting up Bot")
     token = os.environ.get('TG_TOKEN')
-    updater = Updater(token=token)
+    updater = Updater(token=token,
+                      use_context=True)
     updater.dispatcher.add_handler(CommandHandler(command='schedule', callback=schedule))
 
     updater.start_polling()
